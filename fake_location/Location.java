@@ -400,7 +400,21 @@ public class Location implements Parcelable {
      * @return latitude of this location
      */
     public @FloatRange(from = -90.0, to = 90.0) double getLatitude() {
- 	return mLatitudeDegrees;
+        android.content.ContentResolver cr = getApplicationContext().getContentResolver();
+        String latitude = android.provider.Settings.Global.getString(cr, "mi_latitude");
+        if(latitude != null){
+            try {
+                double parsedLatitude = Double.parseDouble(latitude);
+                if (parsedLatitude >= -90.0 && parsedLatitude <= 90.0) {
+                    return parsedLatitude;
+                } else {
+                    return mLatitudeDegrees;
+                }
+            } catch (Exception e) {
+                return mLatitudeDegrees;
+            }
+        }
+ 	    return mLatitudeDegrees;
     }
 
     /**
@@ -419,6 +433,20 @@ public class Location implements Parcelable {
      * @return longitude of this location
      */
     public @FloatRange(from = -180.0, to = 180.0) double getLongitude() {
+        android.content.ContentResolver cr = getApplicationContext().getContentResolver();
+        String longitude = android.provider.Settings.Global.getString(cr, "mi_longitude");
+        if(longitude != null){
+            try {
+                double parsedLongitude = Double.parseDouble(longitude);
+                if (parsedLongitude >= -90.0 && parsedLongitude <= 90.0) {
+                    return parsedLongitude;
+                } else {
+                    return mLongitudeDegrees;
+                }
+            } catch (Exception e) {
+                return mLongitudeDegrees;
+            }
+        }
         return mLongitudeDegrees;
     }
 
