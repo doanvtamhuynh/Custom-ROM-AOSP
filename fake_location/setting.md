@@ -1,6 +1,6 @@
-### Put Setting
+### Put Settings
 
-#### Fake Setting:
+#### Fake:
 ```
 adb shell settings put global mi_latitude <latitude_value>
 ```
@@ -8,7 +8,7 @@ adb shell settings put global mi_latitude <latitude_value>
 adb shell settings put global mi_longitude <longitude_value>
 ```
 
-#### Default Setting:
+#### Default:
 ```
 adb shell settings put global mi_latitude null
 ```
