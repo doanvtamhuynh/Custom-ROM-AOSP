@@ -400,7 +400,7 @@ public class Location implements Parcelable {
      * @return latitude of this location
      */
     public @FloatRange(from = -90.0, to = 90.0) double getLatitude() {
-        android.content.ContentResolver cr = getApplicationContext().getContentResolver();
+        android.content.ContentResolver cr = android.app.ActivityThread.currentApplication().getContentResolver();
         String latitude = android.provider.Settings.Global.getString(cr, "mi_latitude");
         if(latitude != null){
             try {
@@ -433,7 +433,7 @@ public class Location implements Parcelable {
      * @return longitude of this location
      */
     public @FloatRange(from = -180.0, to = 180.0) double getLongitude() {
-        android.content.ContentResolver cr = getApplicationContext().getContentResolver();
+        android.content.ContentResolver cr = android.app.ActivityThread.currentApplication().getContentResolver();
         String longitude = android.provider.Settings.Global.getString(cr, "mi_longitude");
         if(longitude != null){
             try {
