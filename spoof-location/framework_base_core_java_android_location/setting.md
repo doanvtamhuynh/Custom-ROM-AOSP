@@ -1,6 +1,6 @@
 ### Put Settings
 
-#### Fake:
+#### Spoof:
 ```
 adb shell settings put global mi_latitude <latitude_value>
 ```
