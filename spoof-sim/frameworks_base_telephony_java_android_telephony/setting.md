@@ -2,7 +2,7 @@
 
 #### Spoof Default:
 ```
-adb shell settings put globalspoof_status true
+adb shell settings put global spoof_status true
 ```
 #### Spoof Sim Info:
 ```
