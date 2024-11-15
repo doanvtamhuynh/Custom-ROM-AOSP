@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import android.telephony.SpoofSim;
+
 /**
  * A Parcelable class for Subscription Information.
  */
@@ -464,6 +466,7 @@ public class SubscriptionInfo implements Parcelable {
      * @return the ICC ID, or an empty string if one of these requirements is not met
      */
     public String getIccId() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofIccId();
         return mIccId;
     }
 
@@ -473,6 +476,7 @@ public class SubscriptionInfo implements Parcelable {
      * the subscription is inactive.
      */
     public int getSimSlotIndex() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSimSlotIndex();
         return mSimSlotIndex;
     }
 
@@ -482,6 +486,7 @@ public class SubscriptionInfo implements Parcelable {
      * @see TelephonyManager#getSimCarrierId()
      */
     public int getCarrierId() {
+        if(android.telephony.SpoofSim.getSpoofStatus()) return SpoofSim.spoofCarrierId();
         return mCarrierId;
     }
 
@@ -591,6 +596,7 @@ public class SubscriptionInfo implements Parcelable {
      */
     @Deprecated
     public String getNumber() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSimNumber();
         return mNumber;
     }
 
@@ -653,6 +659,7 @@ public class SubscriptionInfo implements Parcelable {
      * @return The ISO country code. Empty if not available.
      */
     public String getCountryIso() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofCountryIso();
         return mCountryIso;
     }
 
@@ -679,6 +686,7 @@ public class SubscriptionInfo implements Parcelable {
      * @hide
      */
     public boolean isActive() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.getSpoofStatus();
         return mSimSlotIndex >= 0 || mType == SubscriptionManager.SUBSCRIPTION_TYPE_REMOTE_SIM;
     }
 
@@ -747,6 +755,7 @@ public class SubscriptionInfo implements Parcelable {
      */
     @SubscriptionType
     public int getSubscriptionType() {
+        if(SpoofSim.getSpoofStatus()) return SubscriptionManager.SUBSCRIPTION_TYPE_LOCAL_SIM;
         return mType;
     }
 

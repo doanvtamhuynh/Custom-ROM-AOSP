@@ -96,6 +96,7 @@ import android.telephony.Annotation.ThermalMitigationResult;
 import android.telephony.Annotation.UiccAppType;
 import android.telephony.Annotation.UiccAppTypeExt;
 import android.telephony.CallForwardingInfo.CallForwardingReason;
+import android.telephony.TelephonyManager.UssdResponseCallback;
 import android.telephony.VisualVoicemailService.VisualVoicemailTask;
 import android.telephony.data.ApnSetting;
 import android.telephony.data.ApnSetting.MvnoType;
@@ -159,6 +160,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import android.telephony.SpoofSim;
 
 /**
  * Provides access to information about the telephony services on
@@ -662,6 +665,7 @@ public class TelephonyManager {
      */
     @Deprecated
     public int getPhoneCount() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofPhoneCount();
         return getActiveModemCount();
     }
 
@@ -674,6 +678,7 @@ public class TelephonyManager {
      * Returns 3 for Tri standby mode (Tri SIM functionality).
      */
     public int getActiveModemCount() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofPhoneCount();
         int modemCount = 1;
         switch (getMultiSimConfiguration()) {
             case UNKNOWN:
@@ -2223,6 +2228,7 @@ public class TelephonyManager {
     @SuppressAutoDoc // No support for device / profile owner or carrier privileges (b/72967236).
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public String getDeviceId() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofImei();
         try {
             ITelephony telephony = getITelephony();
             if (telephony == null)
@@ -2277,6 +2283,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public String getDeviceId(int slotIndex) {
         // FIXME this assumes phoneId == slotIndex
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofImei();
         try {
             IPhoneSubInfo info = getSubscriberInfoService();
             if (info == null)
@@ -2304,6 +2311,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_GSM)
     public String getImei() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofImei();
         return getImei(getSlotIndex());
     }
 
@@ -2349,6 +2357,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_GSM)
     public String getImei(int slotIndex) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofImei();
         ITelephony telephony = getITelephony();
         if (telephony == null) return null;
 
@@ -2435,6 +2444,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CDMA)
     public String getMeid() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofMeid();
         return getMeid(getSlotIndex());
     }
 
@@ -2477,6 +2487,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CDMA)
     public String getMeid(int slotIndex) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofImei();
         ITelephony telephony = getITelephony();
         if (telephony == null) return null;
 
@@ -2886,6 +2897,7 @@ public class TelephonyManager {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public String getNetworkOperatorName(int subId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofOperatorName();
         int phoneId = SubscriptionManager.getPhoneId(subId);
         return getTelephonyProperty(phoneId, TelephonyProperties.operator_alpha(), "");
     }
@@ -2899,6 +2911,7 @@ public class TelephonyManager {
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
     public String getNetworkOperator() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofOperator();
         return getNetworkOperatorForPhone(getPhoneId());
     }
 
@@ -2915,6 +2928,7 @@ public class TelephonyManager {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public String getNetworkOperator(int subId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofOperator();
         int phoneId = SubscriptionManager.getPhoneId(subId);
         return getNetworkOperatorForPhone(phoneId);
      }
@@ -2932,6 +2946,7 @@ public class TelephonyManager {
      **/
     @UnsupportedAppUsage
     public String getNetworkOperatorForPhone(int phoneId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofOperatorName();
         return getTelephonyProperty(phoneId, TelephonyProperties.operator_numeric(), "");
     }
 
@@ -3020,6 +3035,7 @@ public class TelephonyManager {
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
     public String getNetworkCountryIso() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofCountryIso();
         return getNetworkCountryIso(getSlotIndex());
     }
 
@@ -3046,6 +3062,7 @@ public class TelephonyManager {
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
     @NonNull
     public String getNetworkCountryIso(int slotIndex) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofCountryIso();
         try {
             if (slotIndex != SubscriptionManager.DEFAULT_SIM_SLOT_INDEX
                     && !SubscriptionManager.isValidSlotIndex(slotIndex)) {
@@ -3177,6 +3194,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
     public @NetworkType int getNetworkType() {
+        if(SpoofSim.getSpoofStatus()) return NETWORK_TYPE_LTE;
         return getNetworkType(getSubId(SubscriptionManager.getActiveDataSubscriptionId()));
     }
 
@@ -3210,6 +3228,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public int getNetworkType(int subId) {
+        if(SpoofSim.getSpoofStatus()) return NETWORK_TYPE_LTE;
         try {
             ITelephony telephony = getITelephony();
             if (telephony != null) {
@@ -3274,6 +3293,7 @@ public class TelephonyManager {
             android.Manifest.permission.READ_BASIC_PHONE_STATE})
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
     public @NetworkType int getDataNetworkType() {
+        if(SpoofSim.getSpoofStatus()) return NETWORK_TYPE_LTE;
         return getDataNetworkType(getSubId(SubscriptionManager.getActiveDataSubscriptionId()));
     }
 
@@ -3288,6 +3308,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public int getDataNetworkType(int subId) {
+        if(SpoofSim.getSpoofStatus()) return NETWORK_TYPE_LTE;
         try{
             ITelephony telephony = getITelephony();
             if (telephony != null) {
@@ -3506,7 +3527,6 @@ public class TelephonyManager {
      *
      * These are the ordinal value of IccCardConstants.State.
      */
-
     public static final int SIM_STATE_UNKNOWN = TelephonyProtoEnums.SIM_STATE_UNKNOWN;  // 0
     /** SIM card state: no SIM card is available in the device */
     public static final int SIM_STATE_ABSENT = TelephonyProtoEnums.SIM_STATE_ABSENT;  // 1
@@ -3674,6 +3694,7 @@ public class TelephonyManager {
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public boolean hasIccCard() {
+        if(SpoofSim.getSpoofStatus()) return true;
         return hasIccCard(getSlotIndex());
     }
 
@@ -3686,7 +3707,7 @@ public class TelephonyManager {
     // FIXME Input argument slotIndex should be of type int
     @UnsupportedAppUsage
     public boolean hasIccCard(int slotIndex) {
-
+        if(SpoofSim.getSpoofStatus()) return true;
         try {
             ITelephony telephony = getITelephony();
             if (telephony == null)
@@ -3720,6 +3741,7 @@ public class TelephonyManager {
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public @SimState int getSimState() {
+        if(SpoofSim.getSpoofStatus()) return SIM_STATE_READY;
         int simState = getSimStateIncludingLoaded();
         if (simState == SIM_STATE_LOADED) {
             simState = SIM_STATE_READY;
@@ -3728,6 +3750,7 @@ public class TelephonyManager {
     }
 
     private @SimState int getSimStateIncludingLoaded() {
+        if(SpoofSim.getSpoofStatus()) return SIM_STATE_LOADED;
         int slotIndex = getSlotIndex();
         // slotIndex may be invalid due to sim being absent. In that case query all slots to get
         // sim state
@@ -3765,6 +3788,7 @@ public class TelephonyManager {
     @SystemApi
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public @SimState int getSimCardState() {
+        if(SpoofSim.getSpoofStatus()) return SIM_STATE_PRESENT;
         int simState = getSimState();
         return getSimCardStateFromSimState(simState);
     }
@@ -3790,6 +3814,7 @@ public class TelephonyManager {
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     @Deprecated
     public @SimState int getSimCardState(int physicalSlotIndex) {
+        if(SpoofSim.getSpoofStatus()) return SIM_STATE_PRESENT;
         int activePort = getFirstActivePortIndex(physicalSlotIndex);
         int simState = getSimState(getLogicalSlotIndex(physicalSlotIndex, activePort));
         return getSimCardStateFromSimState(simState);
@@ -3817,6 +3842,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public @SimState int getSimCardState(int physicalSlotIndex, int portIndex) {
+        if(SpoofSim.getSpoofStatus()) return SIM_STATE_PRESENT;
         int simState = getSimState(getLogicalSlotIndex(physicalSlotIndex, portIndex));
         return getSimCardStateFromSimState(simState);
     }
@@ -3826,6 +3852,7 @@ public class TelephonyManager {
      * @return SIM card state
      */
     private @SimState int getSimCardStateFromSimState(int simState) {
+        if(SpoofSim.getSpoofStatus()) return SIM_STATE_PRESENT;
         switch (simState) {
             case SIM_STATE_UNKNOWN:
             case SIM_STATE_ABSENT:
@@ -4008,6 +4035,7 @@ public class TelephonyManager {
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public @SimState int getSimState(int slotIndex) {
+        if(SpoofSim.getSpoofStatus()) return SIM_STATE_READY;
         int simState = getSimStateForSlotIndex(slotIndex);
         if (simState == SIM_STATE_LOADED) {
             simState = SIM_STATE_READY;
@@ -4025,6 +4053,7 @@ public class TelephonyManager {
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public String getSimOperator() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofOperator();
         return getSimOperatorNumeric();
     }
 
@@ -4041,6 +4070,7 @@ public class TelephonyManager {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public String getSimOperator(int subId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofOperator();
         return getSimOperatorNumeric(subId);
     }
 
@@ -4055,6 +4085,7 @@ public class TelephonyManager {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public String getSimOperatorNumeric() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofOperator();
         int subId = mSubId;
         if (!SubscriptionManager.isUsableSubIdValue(subId)) {
             subId = SubscriptionManager.getDefaultDataSubscriptionId();
@@ -4084,6 +4115,7 @@ public class TelephonyManager {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public String getSimOperatorNumeric(int subId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofOperator();
         int phoneId = SubscriptionManager.getPhoneId(subId);
         return getSimOperatorNumericForPhone(phoneId);
     }
@@ -4098,6 +4130,7 @@ public class TelephonyManager {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public String getSimOperatorNumericForPhone(int phoneId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofOperator();
         return getTelephonyProperty(phoneId, TelephonyProperties.icc_operator_numeric(), "");
     }
 
@@ -4110,6 +4143,7 @@ public class TelephonyManager {
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public String getSimOperatorName() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofOperatorName();
         return getSimOperatorNameForPhone(getPhoneId());
     }
 
@@ -4125,6 +4159,7 @@ public class TelephonyManager {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public String getSimOperatorName(int subId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofOperatorName();
         int phoneId = SubscriptionManager.getPhoneId(subId);
         return getSimOperatorNameForPhone(phoneId);
     }
@@ -4136,6 +4171,7 @@ public class TelephonyManager {
      */
     @UnsupportedAppUsage
     public String getSimOperatorNameForPhone(int phoneId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofOperatorName();
         return getTelephonyProperty(phoneId, TelephonyProperties.icc_operator_alpha(), "");
     }
 
@@ -4148,6 +4184,7 @@ public class TelephonyManager {
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public String getSimCountryIso() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofCountryIso();
         return getSimCountryIsoForPhone(getPhoneId());
     }
 
@@ -4170,6 +4207,7 @@ public class TelephonyManager {
      */
     @UnsupportedAppUsage
     public static String getSimCountryIsoForPhone(int phoneId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofOperatorName();
         return getTelephonyProperty(phoneId, TelephonyProperties.icc_operator_iso_country(), "");
     }
 
@@ -4210,6 +4248,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public String getSimSerialNumber() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSimSerialNumber();
          return getSimSerialNumber(getSubId());
     }
 
@@ -4249,6 +4288,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @UnsupportedAppUsage
     public String getSimSerialNumber(int subId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSimSerialNumber();
         try {
             IPhoneSubInfo info = getSubscriberInfoService();
             if (info == null)
@@ -4672,6 +4712,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public String getSubscriberId() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSubscriberId();
         return getSubscriberId(getSubId());
     }
 
@@ -4689,6 +4730,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public String getSubscriberId(int subId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSubscriberId();
         try {
             IPhoneSubInfo info = getSubscriberInfoService();
             if (info == null)
@@ -5292,6 +5334,7 @@ public class TelephonyManager {
     })
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public String getLine1Number() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSimNumber();
         return getLine1Number(getSubId());
     }
 
@@ -5320,6 +5363,7 @@ public class TelephonyManager {
     })
     @UnsupportedAppUsage
     public String getLine1Number(int subId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSimNumber();
         String number = null;
         try {
             ITelephony telephony = getITelephony();
@@ -5578,6 +5622,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
     public String getVoiceMailNumber() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSimNumber();
         return getVoiceMailNumber(getSubId());
     }
 
@@ -5590,6 +5635,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     @UnsupportedAppUsage
     public String getVoiceMailNumber(int subId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSimNumber();
         try {
             IPhoneSubInfo info = getSubscriberInfoService();
             if (info == null)
@@ -6455,6 +6501,7 @@ public class TelephonyManager {
     @RequiresPermission(value = android.Manifest.permission.READ_PHONE_STATE, conditional = true)
     @Deprecated
     public @CallState int getCallState() {
+        if(SpoofSim.getSpoofStatus()) return CALL_STATE_OFFHOOK;
         if (mContext != null) {
             TelecomManager telecomManager = mContext.getSystemService(TelecomManager.class);
             if (telecomManager != null) {
@@ -6480,6 +6527,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
     public @CallState int getCallStateForSubscription() {
+        if(SpoofSim.getSpoofStatus()) return CALL_STATE_OFFHOOK;
         return getCallState(getSubId());
     }
 
@@ -6501,6 +6549,7 @@ public class TelephonyManager {
     @UnsupportedAppUsage
     @RequiresPermission(value = android.Manifest.permission.READ_PHONE_STATE, conditional = true)
     public @CallState int getCallState(int subId) {
+        if(SpoofSim.getSpoofStatus()) return CALL_STATE_OFFHOOK;
         ITelephony telephony = getITelephony();
         if (telephony == null) {
             return CALL_STATE_IDLE;
@@ -8348,6 +8397,7 @@ public class TelephonyManager {
      *
      */
     private int getSubId() {
+      if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSubId();
       if (SubscriptionManager.isUsableSubIdValue(mSubId)) {
         return mSubId;
       }
@@ -8366,6 +8416,7 @@ public class TelephonyManager {
      */
     @UnsupportedAppUsage
     private int getSubId(int preferredSubId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSubId();
         if (SubscriptionManager.isUsableSubIdValue(mSubId)) {
             return mSubId;
         }
@@ -10265,6 +10316,7 @@ public class TelephonyManager {
      * @hide
      */
     public boolean hasCarrierPrivileges(int subId) {
+        if(SpoofSim.getSpoofStatus()) return true;
         try {
             ITelephony telephony = getITelephony();
             if (telephony != null) {
@@ -13289,6 +13341,7 @@ public class TelephonyManager {
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public int getSimCarrierId() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofCarrierId();
         try {
             ITelephony service = getITelephony();
             if (service != null) {
@@ -13358,6 +13411,7 @@ public class TelephonyManager {
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public int getSimSpecificCarrierId() {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofCarrierId();
         try {
             ITelephony service = getITelephony();
             if (service != null) {
@@ -18728,6 +18782,7 @@ public class TelephonyManager {
      */
     @SimState
     public static int getSimStateForSlotIndex(int slotIndex) {
+        if(SpoofSim.getSpoofStatus()) return SIM_STATE_LOADED;
         try {
             ITelephony telephony = getITelephony();
             if (telephony != null) {

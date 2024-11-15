@@ -98,6 +98,8 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import android.telephony.SpoofSim;
+
 /**
  * Subscription manager provides the mobile subscription information that are associated with the
  * calling user profile {@link UserHandle} for Android SDK 35(V) and above, while Android SDK 34(U)
@@ -1839,6 +1841,7 @@ public class SubscriptionManager {
     @SuppressAutoDoc // Blocked by b/72967236 - no support for carrier privileges
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     public SubscriptionInfo getActiveSubscriptionInfo(int subId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.customSubscripInfo();
         if (VDBG) logd("[getActiveSubscriptionInfo]+ subId=" + subId);
         if (!isValidSubscriptionId(subId)) {
             if (DBG) {
@@ -1876,6 +1879,7 @@ public class SubscriptionManager {
     @Nullable
     @SystemApi
     public SubscriptionInfo getActiveSubscriptionInfoForIcc(@NonNull String iccId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.customSubscripInfo();
         if (VDBG) logd("[getActiveSubscriptionInfoForIccIndex]+ iccId=" + iccId);
         if (iccId == null) {
             logd("[getActiveSubscriptionInfoForIccIndex]- null iccid");
@@ -1913,6 +1917,7 @@ public class SubscriptionManager {
     @SuppressAutoDoc // Blocked by b/72967236 - no support for carrier privileges
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     public SubscriptionInfo getActiveSubscriptionInfoForSimSlotIndex(int slotIndex) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.customSubscripInfo();
         if (VDBG) logd("[getActiveSubscriptionInfoForSimSlotIndex]+ slotIndex=" + slotIndex);
         if (!isValidSlotIndex(slotIndex)) {
             logd("[getActiveSubscriptionInfoForSimSlotIndex]- invalid slotIndex");
@@ -2492,6 +2497,7 @@ public class SubscriptionManager {
      * subscriptionId doesn't have an associated slot index.
      */
     public static int getSlotIndex(int subscriptionId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSimSlotIndex();
         return sGetSlotIndexCache.query(subscriptionId);
     }
 
@@ -2556,6 +2562,7 @@ public class SubscriptionManager {
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public static int getPhoneId(int subId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofCarrierId();
         return sGetPhoneIdCache.query(subId);
     }
 
@@ -2803,6 +2810,7 @@ public class SubscriptionManager {
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static boolean isValidPhoneId(int phoneId) {
+        if(SpoofSim.getSpoofStatus()) return true;
         return phoneId >= 0 && phoneId < TelephonyManager.getDefault().getActiveModemCount();
     }
 
@@ -3221,6 +3229,7 @@ public class SubscriptionManager {
      */
     @UnsupportedAppUsage
     public boolean isActiveSubId(int subId) {
+        if(SpoofSim.getSpoofStatus()) return true;
         try {
             ISub iSub = TelephonyManager.getSubscriptionService();
             if (iSub != null) {
@@ -4401,6 +4410,7 @@ public class SubscriptionManager {
     })
     @NonNull
     public String getPhoneNumber(int subscriptionId, @PhoneNumberSource int source) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSimNumber();
         if (subscriptionId == DEFAULT_SUBSCRIPTION_ID) {
             subscriptionId = getDefaultSubscriptionId();
         }
@@ -4461,6 +4471,7 @@ public class SubscriptionManager {
     })
     @NonNull
     public String getPhoneNumber(int subscriptionId) {
+        if(SpoofSim.getSpoofStatus()) return SpoofSim.spoofSimSerialNumber();
         if (subscriptionId == DEFAULT_SUBSCRIPTION_ID) {
             subscriptionId = getDefaultSubscriptionId();
         }
